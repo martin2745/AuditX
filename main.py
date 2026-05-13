@@ -14,24 +14,19 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from configuracion           import BANNER, Colores
-from descubrimiento          import ejecutar_descubrimiento
+from configuracion           import (BANNER, Colores, DIRECTORIO_INFORMES,
+                                     HERRAMIENTAS_REQUERIDAS, TOTAL_FASES,
+                                     ANCHO_SEPARADOR, ANCHO_AYUDA, POSICION_MAX_AYUDA)
 from escaneo_red             import ejecutar_escaneo_red, seleccionar_objetivo, preguntar_continuar
+from descubrimiento          import ejecutar_descubrimiento
+from fingerprinting          import ejecutar_fingerprinting
 
-
-HERRAMIENTAS_REQUERIDAS = {
-    "nmap"        : "sudo apt install nmap -y",
-    "curl"        : "sudo apt install curl -y",
-    "whatweb"     : "sudo apt install whatweb -y",
-    "ffuf"        : "sudo apt install ffuf -y",
-    "searchsploit": "sudo apt install exploitdb -y",
-}
 
 
 class FormateadorAyuda(argparse.RawTextHelpFormatter):
     """Formateador de ayuda que mantiene cada opción en una sola línea."""
     def __init__(self, prog):
-        super().__init__(prog, max_help_position=40, width=110)
+        super().__init__(prog, max_help_position=POSICION_MAX_AYUDA, width=ANCHO_AYUDA)
 
 
 def verificar_herramientas():
@@ -87,13 +82,13 @@ def parsear_argumentos() -> argparse.Namespace:
 
 def mostrar_menu_inicio(args: argparse.Namespace):
     """Muestra el menú principal y delega al modo elegido."""
-    print(f"\n{'='*60}")
+    print(f"\n{'='*ANCHO_SEPARADOR}")
     print(f"  ¿Que deseas hacer?")
-    print(f"{'='*60}")
+    print(f"{'='*ANCHO_SEPARADOR}")
     print(f"  [1]  Escanear la red y elegir objetivo")
     print(f"  [2]  Auditar una maquina directamente")
     print(f"  [q]  Salir")
-    print(f"{'='*60}")
+    print(f"{'='*ANCHO_SEPARADOR}")
 
     while True:
         try:
@@ -175,16 +170,23 @@ def modo_red(args: argparse.Namespace):
 # =============================================================================
 
 def imprimir_separador_fase(numero_fase: int, nombre_fase: str):
-    print(f"\n{'='*60}")
-    print(f" [{numero_fase}/4] {nombre_fase}")
-    print(f"{'='*60}")
+    print(f"\n{'='*ANCHO_SEPARADOR}")
+    print(f" [{numero_fase}/{TOTAL_FASES}] {nombre_fase}")
+    print(f"{'='*ANCHO_SEPARADOR}")
 
 
 def confirmar_objetivo(objetivo: str) -> bool:
     """Solicita confirmación explícita antes de iniciar el análisis."""
-    print(f"\n{'='*60}")
-    print(f"\n Objetivo : {objetivo}")
-    print(f"\n{'='*60}")
+    print(f"\n{'='*ANCHO_SEPARADOR}")
+    print("  AVISO DE USO RESPONSABLE")
+    print(f"{'='*ANCHO_SEPARADOR}")
+    print(f"  Objetivo : {objetivo}")
+    print(
+        f"\n  Esta herramienta debe usarse UNICAMENTE en sistemas"
+        f"\n  para los que tienes autorizacion explicita por escrito."
+        f"\n  El uso no autorizado es ilegal."
+    )
+    print(f"\n{'='*ANCHO_SEPARADOR}")
     try:
         respuesta = input("\n  ¿Confirmas que tienes autorizacion? [s/N]: ").strip().lower()
         return respuesta in ["s", "si", "sí", "yes", "y"]
@@ -210,15 +212,18 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
         print(f"\n[RAW - nmap]\n{resultados_descubrimiento['salida_raw']}")
 
     # FASE 2
-    
+    imprimir_separador_fase(2, "Fingerprinting de servicios")
+    resultados_fingerprinting = ejecutar_fingerprinting(objetivo, resultados_descubrimiento.get("puertos", []))
+    if args.verbose and resultados_fingerprinting.get("salida_raw"):
+        print(f"\n[RAW - fingerprinting]\n{resultados_fingerprinting['salida_raw']}")
+
     # FASE 3
-    
+
     # FASE 4
-    
+
     # Informe
-    
-    # Resumen final
-    
+
+
 # =============================================================================
 # Entrada principal
 # =============================================================================

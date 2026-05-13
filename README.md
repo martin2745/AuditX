@@ -32,7 +32,7 @@ AuditX/
 │
 ├── escaneo_red.py                   # Fase 0: Descubrimiento de hosts en red (nmap -sn)
 ├── descubrimiento.py                # Fase 1: Escaneo de puertos (nmap)
-...
+├── fingerprinting/                  # Fase 2: Módulo de fingerprinting por servicio (web, ssh, ftp, mysql, smb, rdp)
 └── informes/                        # Informes generados automáticamente
 ```
 
@@ -129,6 +129,7 @@ Opciones de salida:
 |------|---------------------------------|----------------|----------------------------------------------|
 | 0    | `escaneo_red.py`                | nmap -sn       | Ping sweep para descubrir hosts activos      |
 | 1    | `descubrimiento.py`             | nmap           | Escaneo de puertos y detección de servicios  |
+| 2    | `fingerprinting/`               | scripts nativos| Fingerprinting de servicios (web, ssh, ftp, mysql, smb, rdp) |
 
 ---
 
