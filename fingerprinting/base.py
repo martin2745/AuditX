@@ -31,13 +31,13 @@ def ejecutar_nmap_script(host: str, puerto: int, scripts: str) -> str:
         return ""
 
 
-def ejecutar_comando(cmd: list) -> str:
+def ejecutar_comando(cmd: list, timeout: int = TIMEOUT_COMANDO) -> str:
     """Ejecuta un comando (lista de args) y devuelve stdout + stderr."""
     proceso = subprocess.run(
         cmd,
         capture_output=True,
         text=True,
-        timeout=TIMEOUT_COMANDO
+        timeout=timeout
     )
     return proceso.stdout + proceso.stderr
 

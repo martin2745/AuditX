@@ -14,13 +14,13 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from configuracion           import (BANNER, Colores, DIRECTORIO_INFORMES,
-                                     HERRAMIENTAS_REQUERIDAS, TOTAL_FASES,
-                                     ANCHO_SEPARADOR, ANCHO_AYUDA, POSICION_MAX_AYUDA)
-from escaneo_red             import ejecutar_escaneo_red, seleccionar_objetivo, preguntar_continuar
-from descubrimiento          import ejecutar_descubrimiento
-from fingerprinting          import ejecutar_fingerprinting
-
+from configuracion              import (BANNER, Colores, DIRECTORIO_INFORMES,
+                                        HERRAMIENTAS_REQUERIDAS, HERRAMIENTAS_OPCIONALES_FUZZ,
+                                        TOTAL_FASES, ANCHO_SEPARADOR, ANCHO_AYUDA, POSICION_MAX_AYUDA)
+from escaneo_red                import ejecutar_escaneo_red, seleccionar_objetivo, preguntar_continuar
+from descubrimiento             import ejecutar_descubrimiento
+from fingerprinting             import ejecutar_fingerprinting
+from enumeracion                import ejecutar_enumeracion
 
 
 class FormateadorAyuda(argparse.RawTextHelpFormatter):
@@ -29,15 +29,19 @@ class FormateadorAyuda(argparse.RawTextHelpFormatter):
         super().__init__(prog, max_help_position=POSICION_MAX_AYUDA, width=ANCHO_AYUDA)
 
 
-def verificar_herramientas():
-    """Verifica que todas las herramientas externas estén disponibles antes de empezar."""
-    faltantes = [h for h in HERRAMIENTAS_REQUERIDAS if not shutil.which(h)]
+def verificar_herramientas(fuzz: bool = False):
+    """Verifica que las herramientas externas necesarias estén disponibles."""
+    herramientas = dict(HERRAMIENTAS_REQUERIDAS)
+    if fuzz:
+        herramientas.update(HERRAMIENTAS_OPCIONALES_FUZZ)
+
+    faltantes = {h: cmd for h, cmd in herramientas.items() if not shutil.which(h)}
     if not faltantes:
         return
     print(f"\n{Colores.ERROR}[!] Herramientas no encontradas:{Colores.FIN}")
-    for herramienta in faltantes:
-        print(f"    {Colores.ERROR}x {herramienta}{Colores.FIN}  ->  {HERRAMIENTAS_REQUERIDAS[herramienta]}")
-    print(f"\n    Instalas y vuelve a ejecutar AuditX.\n")
+    for herramienta, cmd in faltantes.items():
+        print(f"    {Colores.ERROR}x {herramienta}{Colores.FIN}  ->  {cmd}")
+    print(f"\n    Instálalas y vuelve a ejecutar AuditX.\n")
     sys.exit(1)
 
 
@@ -56,7 +60,8 @@ def parsear_argumentos() -> argparse.Namespace:
             "  python3 main.py -n 192.168.100.0/24              # Modo red directo\n"
             "  python3 main.py -t 192.168.1.10                  # Audita directamente\n"
             "  python3 main.py -t 192.168.1.10 --sigiloso\n"
-            "  python3 main.py -t 192.168.1.10 -w /mi/wordlist.txt --timeout-fuzz 120\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz -w /mi/wordlist.txt --timeout-fuzz 120\n"
         )
     )
 
@@ -65,11 +70,11 @@ def parsear_argumentos() -> argparse.Namespace:
     grupo_objetivo.add_argument("-n", "--red", help="Rango de red en CIDR (ej: 192.168.100.0/24)")
 
     parser.add_argument("--sigiloso", action="store_true", default=False, help="Escaneo sigiloso TCP SYN")
-    parser.add_argument("--omitir-enum", action="store_true", default=False, help="Omitir enumeracion de directorios (ffuf)")
+    parser.add_argument("--fuzz", action="store_true", default=False, help="Activar fuzzing de directorios web (ffuf)")
     parser.add_argument("--omitir-vuln", action="store_true", default=False, help="Omitir busqueda de vulnerabilidades (searchsploit)")
     parser.add_argument("--omitir-informe", action="store_true", default=False, help="No generar informe Markdown al finalizar")
-    parser.add_argument("-w", "--wordlist", default=None, help="Wordlist personalizada para ffuf")
-    parser.add_argument("--timeout-fuzz", type=int, default=None, metavar="SEGUNDOS", help="Timeout para ffuf en segundos (por defecto: 600)")
+    parser.add_argument("-w", "--wordlist", default=None, help="Wordlist personalizada para ffuf (requiere --fuzz)")
+    parser.add_argument("--timeout-fuzz", type=int, default=None, metavar="SEGUNDOS", help="Timeout para ffuf en segundos (por defecto: 600, requiere --fuzz)")
     parser.add_argument("-o", "--salida", default=None, help="Ruta personalizada para el informe")
     parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Mostrar salida raw de las herramientas")
 
@@ -217,12 +222,25 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
     if args.verbose and resultados_fingerprinting.get("salida_raw"):
         print(f"\n[RAW - fingerprinting]\n{resultados_fingerprinting['salida_raw']}")
 
+    # MÓDULO OPCIONAL — Fuzzing web
+    resultados_enumeracion = {"hallazgos": [], "interesantes": [], "urls_fuzzeadas": [], "wordlist_usada": "N/A", "salida_raw": "", "errores": []}
+    if args.fuzz:
+        print(f"\n{'='*ANCHO_SEPARADOR}")
+        print(f" [+] MÓDULO OPCIONAL — Fuzzing de directorios web")
+        print(f"{'='*ANCHO_SEPARADOR}")
+        resultados_enumeracion = ejecutar_enumeracion(
+            objetivo,
+            resultados_descubrimiento.get("puertos", []),
+            wordlist=args.wordlist,
+            timeout_fuzz=args.timeout_fuzz
+        )
+        if args.verbose and resultados_enumeracion.get("salida_raw"):
+            print(f"\n[RAW - ffuf]\n{resultados_enumeracion['salida_raw']}")
+
     # FASE 3
-
-    # FASE 4
-
+   
     # Informe
-
+    
 
 # =============================================================================
 # Entrada principal
@@ -231,7 +249,7 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
 def principal():
     try:
         args = parsear_argumentos()
-        verificar_herramientas()
+        verificar_herramientas(fuzz=args.fuzz)
         print(BANNER)
 
         if args.objetivo:
