@@ -22,6 +22,7 @@ from descubrimiento             import ejecutar_descubrimiento
 from fingerprinting             import ejecutar_fingerprinting
 from enumeracion                import ejecutar_enumeracion
 from busqueda_vulnerabilidades  import ejecutar_busqueda_vulnerabilidades
+from generador_informe          import generar_informe
 
 
 class FormateadorAyuda(argparse.RawTextHelpFormatter):
@@ -57,12 +58,18 @@ def parsear_argumentos() -> argparse.Namespace:
         formatter_class=FormateadorAyuda,
         epilog=(
             "Ejemplos:\n"
-            "  python3 main.py                                  # Menu interactivo\n"
-            "  python3 main.py -n 192.168.100.0/24              # Modo red directo\n"
-            "  python3 main.py -t 192.168.1.10                  # Audita directamente\n"
-            "  python3 main.py -t 192.168.1.10 --sigiloso\n"
-            "  python3 main.py -t 192.168.1.10 --fuzz\n"
-            "  python3 main.py -t 192.168.1.10 --fuzz -w /mi/wordlist.txt --timeout-fuzz 120\n"
+            "  python3 main.py                                                      # Menu interactivo\n"
+            "  python3 main.py -n 192.168.100.0/24                                  # Escaneo de red\n"
+            "  python3 main.py -t 192.168.1.10                                      # Audita directamente\n"
+            "  python3 main.py -t 192.168.1.10 --sigiloso                           # Escaneo sigiloso\n"
+            "  python3 main.py -t 192.168.1.10 --informe                            # Con informe Markdown\n"
+            "  python3 main.py -t 192.168.1.10 --informe -o /tmp/informe.md         # Informe en ruta propia\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz                               # Con fuzzing web\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz -w /mi/wordlist.txt           # Fuzzing con wordlist propia\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz --timeout-fuzz 120            # Fuzzing con timeout reducido\n"
+            "  python3 main.py -t 192.168.1.10 --omitir-vuln                        # Sin busqueda de vulnerabilidades\n"
+            "  python3 main.py -t 192.168.1.10 --fuzz --informe                     # Fuzzing + informe\n"
+            "  python3 main.py -t 192.168.1.10 --sigiloso --fuzz --informe          # Todo activado\n"
         )
     )
 
@@ -73,13 +80,14 @@ def parsear_argumentos() -> argparse.Namespace:
     parser.add_argument("--sigiloso", action="store_true", default=False, help="Escaneo sigiloso TCP SYN")
     parser.add_argument("--fuzz", action="store_true", default=False, help="Activar fuzzing de directorios web (ffuf)")
     parser.add_argument("--omitir-vuln", action="store_true", default=False, help="Omitir busqueda de vulnerabilidades (searchsploit)")
-    parser.add_argument("--omitir-informe", action="store_true", default=False, help="No generar informe Markdown al finalizar")
+    parser.add_argument("--informe", action="store_true", default=False, help="Generar informe Markdown al finalizar")
     parser.add_argument("-w", "--wordlist", default=None, help="Wordlist personalizada para ffuf (requiere --fuzz)")
     parser.add_argument("--timeout-fuzz", type=int, default=None, metavar="SEGUNDOS", help="Timeout para ffuf en segundos (por defecto: 600, requiere --fuzz)")
-    parser.add_argument("-o", "--salida", default=None, help="Ruta personalizada para el informe")
+    parser.add_argument("-o", "--salida", default=None, help="Ruta personalizada para el informe (requiere --informe)")
     parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Mostrar salida raw de las herramientas")
 
     return parser.parse_args()
+
 
 
 # =============================================================================
@@ -188,13 +196,12 @@ def confirmar_objetivo(objetivo: str) -> bool:
     print(f"{'='*ANCHO_SEPARADOR}")
     print(f"  Objetivo : {objetivo}")
     print(
-        f"\n  Esta herramienta debe usarse UNICAMENTE en sistemas"
-        f"\n  para los que tienes autorizacion explicita por escrito."
-        f"\n  El uso no autorizado es ilegal."
+        f"\n  Esta herramienta debe usarse ÚNICAMENTE en sistemas"
+        f"\n  para los que tienes autorización."
     )
     print(f"\n{'='*ANCHO_SEPARADOR}")
     try:
-        respuesta = input("\n  ¿Confirmas que tienes autorizacion? [s/N]: ").strip().lower()
+        respuesta = input("\n  ¿Confirmas que tienes autorización? [s/N]: ").strip().lower()
         return respuesta in ["s", "si", "sí", "yes", "y"]
     except KeyboardInterrupt:
         return False
@@ -246,7 +253,36 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
         print(f"\n[~] Fase 3 omitida (--omitir-vuln)")
         resultados_vulnerabilidades = {"vulnerabilidades": [], "hallazgos_owasp": {}, "errores": []}
    
-    # Informe
+    # Informe    
+    ruta_informe = None
+    if args.informe:
+        ruta_informe = generar_informe(
+            objetivo                    = objetivo,
+            resultados_descubrimiento   = resultados_descubrimiento,
+            resultados_fingerprinting   = resultados_fingerprinting,
+            resultados_enumeracion      = resultados_enumeracion,
+            resultados_vulnerabilidades = resultados_vulnerabilidades
+        )
+
+     # Resumen final
+    hora_fin     = datetime.now()
+    duracion     = hora_fin - hora_inicio
+    total_vulns  = len(resultados_vulnerabilidades.get("vulnerabilidades", []))
+
+    print(f"\n{'='*ANCHO_SEPARADOR}")
+    print(f" AUDITORIA COMPLETADA")
+    print(f"{'='*ANCHO_SEPARADOR}")
+    print(f"  Objetivo    : {objetivo}")
+    print(f"  Duracion    : {str(duracion).split('.')[0]}")
+    print(f"  Puertos     : {len(resultados_descubrimiento.get('puertos', []))}")
+    print(f"  Servicios   : {len(resultados_fingerprinting.get('servicios', {}))}")
+    print(f"  Tecnologias : {len(resultados_fingerprinting.get('tecnologias', []))}")
+    print(f"  Directorios : {len(resultados_enumeracion.get('hallazgos', []))}")
+    aviso_vuln = " <-- revisar" if total_vulns > 0 else ""
+    print(f"  Vulnerab.   : {total_vulns}{aviso_vuln}")
+    if ruta_informe:
+        print(f"\n  Informe: {ruta_informe}")
+    print(f"{'='*ANCHO_SEPARADOR}\n")
     
 
 # =============================================================================
