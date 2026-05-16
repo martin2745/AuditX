@@ -1,6 +1,6 @@
 # AuditX
 
-**Herramienta modular de auditoría web automatizada**
+**Herramienta modular de auditoría de seguridad automatizada**
 
 > Desarrollada como parte del Trabajo Fin de Máster en Ciberseguridad  
 > Universidad Internacional Isabel I de Castilla — Curso 2025/26  
@@ -18,7 +18,9 @@ El uso no autorizado sobre sistemas ajenos es ilegal y puede conllevar responsab
 
 ## Descripción
 
-AuditX automatiza las fases de una auditoría de seguridad web siguiendo las metodologías **PTES** (Penetration Testing Execution Standard) y **OWASP WSTG** (Web Security Testing Guide).
+AuditX automatiza las fases de una auditoría de seguridad siguiendo las metodologías **PTES** (Penetration Testing Execution Standard) y **OWASP WSTG** (Web Security Testing Guide).
+
+La herramienta orquesta de forma secuencial tres fases obligatorias y dos módulos opcionales, tomando como entrada mínima una **IP o hostname objetivo**.
 
 ---
 
@@ -27,35 +29,94 @@ AuditX automatiza las fases de una auditoría de seguridad web siguiendo las met
 ```
 AuditX/
 │
-├── main.py                          # Punto de entrada y orquestador
-├── configuracion.py                 # Configuración global (rutas, timeouts, colores)
+├── main.py                          # Punto de entrada y orquestador del pipeline
+├── configuracion.py                 # Configuración global: rutas, timeouts, constantes
 │
-├── escaneo_red.py                   # Fase 0: Descubrimiento de hosts en red (nmap -sn)
 ├── descubrimiento.py                # Fase 1: Escaneo de puertos (nmap)
-├── fingerprinting/                  # Fase 2: Módulo de fingerprinting por servicio (web, ssh, ftp, mysql, smb, rdp)
-└── informes/                        # Informes generados automáticamente
+├── fingerprinting/                  # Fase 2: Identificación de tecnologías
+│   ├── __init__.py                  #   Orquestador: despacha según tipo de servicio
+│   ├── base.py                      #   Utilidades compartidas (socket, comandos)
+│   ├── web.py                       #   HTTP/HTTPS: curl + whatweb
+│   ├── ssh.py                       #   SSH: banner grabbing
+│   ├── ftp.py                       #   FTP: acceso anónimo
+│   ├── smb.py                       #   SMB: signing, shares
+│   ├── mysql.py                     #   MySQL: acceso sin credenciales
+│   └── rdp.py                       #   RDP: detección
+├── busqueda_vulnerabilidades.py     # Fase 3: Búsqueda de CVEs (searchsploit)
+│
+├── enumeracion.py                   # Módulo opcional: Fuzzing web (ffuf) [--fuzz]
+├── generador_informe.py             # Módulo opcional: Informe Markdown [--informe]
+├── escaneo_red.py                   # Descubrimiento de hosts en red (nmap -sn)
+│
+├── wordlists/
+│   └── default.txt                  # Wordlist curada por defecto
+└── informes/                        # Informes generados (creado automáticamente)
 ```
+
+### Flujo de ejecución
+
+```
+Arranque
+    │
+    ▼
+Menú interactivo  ──o──  -t IP  ──o──  -n RED
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│  Fase 1 — descubrimiento.py                 │  nmap
+│  Escaneo de puertos y detección de servicios│
+└────────────────────┬────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│  Fase 2 — fingerprinting/                   │  curl + whatweb
+│  Identificación de tecnologías y versiones  │
+└────────────────────┬────────────────────────┘
+                     │
+                     ├──► [--fuzz]  Módulo opcional: enumeracion.py  (ffuf)
+                     │
+                     ▼
+┌─────────────────────────────────────────────┐
+│  Fase 3 — busqueda_vulnerabilidades.py      │  searchsploit
+│  Búsqueda de CVEs y clasificación OWASP     │
+└────────────────────┬────────────────────────┘
+                     │
+                     └──► [--informe]  Módulo opcional: generador_informe.py
+```
+
+---
 
 ## Requisitos
 
 ### Sistema operativo
 
-- Kali Linux (recomendado) o cualquier distribución Linux con las herramientas necesarias
-
-### Herramientas externas
-
-```bash
-sudo apt update
-sudo apt install -y nmap whatweb ffuf exploitdb seclists curl
-```
-
-> AuditX verifica automáticamente al arrancar que todas las herramientas están instaladas
-> e indica el comando exacto para instalar las que falten.
+- **Kali Linux** (recomendado) o cualquier distribución Debian/Ubuntu
+- No compatible con Windows de forma nativa (usar WSL)
 
 ### Python
 
 - Python 3.8 o superior
-- Sin dependencias externas (usa únicamente la librería estándar)
+- Sin dependencias externas — solo biblioteca estándar
+
+### Herramientas externas
+
+Herramientas **obligatorias** (verificadas automáticamente al arrancar):
+
+```bash
+sudo apt install -y nmap curl whatweb exploitdb
+```
+
+Herramientas **opcionales** (solo necesarias si se usa `--fuzz`):
+
+```bash
+sudo apt install -y ffuf
+```
+
+Wordlists del sistema (recomendado):
+
+```bash
+sudo apt install -y seclists
+```
 
 ---
 
@@ -66,70 +127,62 @@ git clone https://github.com/tu-usuario/AuditX.git
 cd AuditX
 ```
 
+No se requieren entornos virtuales ni dependencias Python adicionales.
+
 ---
 
-## Uso
-
-### Modo interactivo (recomendado)
+## Uso rápido
 
 ```bash
+# Menú interactivo
 sudo python3 main.py
-```
 
-Al arrancar sin argumentos se muestra el menú principal:
-
-```bash
-============================================================
-  ¿Qué deseas hacer?
-============================================================
-  [1]  Escanear la red y elegir objetivo
-  [2]  Auditar una máquina directamente
-  [q]  Salir
-============================================================
-```
-
-- **Opción 1:** Pide el rango de red (CIDR), descubre hosts activos, muestra la lista numerada y permite elegir cuál auditar. Al finalizar pregunta si se quiere auditar otro host.
-- **Opción 2:** Pide la IP directamente, audita y termina.
-
-### Atajos por línea de comandos
-
-```bash
-# Auditar una máquina directamente
+# Auditoría directa
 sudo python3 main.py -t 192.168.1.10
 
-# Escanear red y elegir objetivo de forma interactiva
-sudo python3 main.py -n 192.168.100.0/24
+# Con fuzzing web
+sudo python3 main.py -t 192.168.1.10 --fuzz
+
+# Con fuzzing e informe
+sudo python3 main.py -t 192.168.1.10 --fuzz --informe
+
+# Con wordlist propia e informe en ruta personalizada
+sudo python3 main.py -t 192.168.1.10 --fuzz -w /usr/share/wordlists/dirb/common.txt --informe -o /tmp/informe.md
 ```
 
-### Todas las opciones disponibles
+**Para una guía completa de uso consulta el [Manual de Usuario](manual_usuario.md)**
 
-```bash
-Objetivo (mutuamente excluyentes):
-  -t, --objetivo    IP o hostname del objetivo
-  -n, --red         Rango de red en CIDR (ej: 192.168.100.0/24)
+---
 
-Opciones de módulos:
-  --sigiloso        Escaneo sigiloso TCP SYN (requiere sudo)
-  --omitir-enum     Omitir fase de enumeración de directorios
-  --omitir-vuln     Omitir fase de búsqueda de vulnerabilidades
-  --omitir-informe  No generar informe al finalizar
+## Fases y módulos
 
-Opciones de wordlist y tiempos:
-  -w, --wordlist      Ruta a wordlist personalizada para ffuf
-  --timeout-fuzz      Timeout máximo para ffuf en segundos (defecto: 600)
+| Tipo     | Módulo                         | Herramienta      | Descripción                                  |
+|----------|--------------------------------|------------------|----------------------------------------------|
+| Fase 1   | `descubrimiento.py`            | nmap             | Escaneo de puertos y detección de servicios  |
+| Fase 2   | `fingerprinting/`              | curl, whatweb    | Identificación de tecnologías y versiones    |
+| Fase 3   | `busqueda_vulnerabilidades.py` | searchsploit     | Búsqueda de CVEs y clasificación OWASP       |
+| Opcional | `enumeracion.py`               | ffuf             | Fuzzing de directorios web (`--fuzz`)        |
+| Opcional | `generador_informe.py`         | —                | Informe Markdown (`--informe`)               |
+| Extra    | `escaneo_red.py`               | nmap -sn         | Ping sweep para descubrir hosts en red       |
 
-Opciones de salida:
-  -o, --salida      Ruta personalizada para el informe
-  -v, --verbose     Mostrar salida raw de las herramientas
+---
+
+## Informe generado
+
+El informe (activado con `--informe`) se guarda en `informes/` con el nombre:
+
+```
+AuditX_Informe_<IP>_<YYYYMMDD_HHMMSS>.md
 ```
 
-## Fases de auditoría
+Estructura:
 
-| Fase | Módulo                          | Herramienta    | Descripción                                  |
-|------|---------------------------------|----------------|----------------------------------------------|
-| 0    | `escaneo_red.py`                | nmap -sn       | Ping sweep para descubrir hosts activos      |
-| 1    | `descubrimiento.py`             | nmap           | Escaneo de puertos y detección de servicios  |
-| 2    | `fingerprinting/`               | scripts nativos| Fingerprinting de servicios (web, ssh, ftp, mysql, smb, rdp) |
+1. **Resumen Ejecutivo** — objetivo, fecha, nivel de riesgo, métricas
+2. **Descubrimiento de Puertos y Servicios** — tabla de puertos, SO, metadatos HTTP
+3. **Fingerprinting de Servicios** — servidor, CMS, tecnologías, cabeceras de seguridad
+4. **Enumeración de Directorios** — rutas descubiertas (si se usó `--fuzz`)
+5. **Clasificación OWASP Top 10 2021** — hallazgos agrupados por categoría con CVE
+6. **Vulnerabilidades Identificadas** — fichas por exploit con CVE, severidad y categoría OWASP
 
 ---
 
@@ -139,3 +192,9 @@ Opciones de salida:
 - [PTES - Penetration Testing Execution Standard](http://www.pentest-standard.org/)
 - [OWASP WSTG](https://owasp.org/www-project-web-security-testing-guide/)
 - [Exploit-DB](https://www.exploit-db.com/)
+
+---
+
+## Contexto académico
+
+Esta herramienta fue desarrollada como parte del TFM *"Evaluación de la seguridad en aplicaciones web mediante pruebas de penetración y análisis de vulnerabilidades"* del Máster en Ciberseguridad de la Universidad Internacional Isabel I de Castilla.
