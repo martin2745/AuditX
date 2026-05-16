@@ -21,6 +21,7 @@ from escaneo_red                import ejecutar_escaneo_red, seleccionar_objetiv
 from descubrimiento             import ejecutar_descubrimiento
 from fingerprinting             import ejecutar_fingerprinting
 from enumeracion                import ejecutar_enumeracion
+from busqueda_vulnerabilidades  import ejecutar_busqueda_vulnerabilidades
 
 
 class FormateadorAyuda(argparse.RawTextHelpFormatter):
@@ -238,6 +239,12 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
             print(f"\n[RAW - ffuf]\n{resultados_enumeracion['salida_raw']}")
 
     # FASE 3
+    if not args.omitir_vuln:
+        imprimir_separador_fase(3, "Busqueda de vulnerabilidades conocidas")
+        resultados_vulnerabilidades = ejecutar_busqueda_vulnerabilidades(resultados_descubrimiento, resultados_fingerprinting)
+    else:
+        print(f"\n[~] Fase 3 omitida (--omitir-vuln)")
+        resultados_vulnerabilidades = {"vulnerabilidades": [], "hallazgos_owasp": {}, "errores": []}
    
     # Informe
     

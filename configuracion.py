@@ -86,6 +86,61 @@ WHATWEB_AGRESIVIDAD = 1 # 1=pasivo, 3=agresivo (más peticiones, más lento)
 # =============================================================================
 
 MAX_TERMINOS_SEARCHSPLOIT = 8
+MAX_PALABRAS_VERSION      = 2    # Palabras del string de versión usadas en la búsqueda
+SEVERIDAD_DEFECTO         = "media"
+OWASP_CATEGORIA_DEFECTO   = ("A06", "Vulnerable and Outdated Components")
+
+MAPEO_OWASP = {
+    # A01 — Broken Access Control
+    "lfi"                : ("A01", "Broken Access Control - Local File Inclusion"),
+    "local file"         : ("A01", "Broken Access Control - Local File Inclusion"),
+    "rfi"                : ("A01", "Broken Access Control - Remote File Inclusion"),
+    "remote file"        : ("A01", "Broken Access Control - Remote File Inclusion"),
+    "path traversal"     : ("A01", "Broken Access Control - Path Traversal"),
+    "directory traversal": ("A01", "Broken Access Control - Path Traversal"),
+    "csrf"               : ("A01", "Broken Access Control - CSRF"),
+    "privilege"          : ("A01", "Broken Access Control - Privilege Escalation"),
+    # A02 — Cryptographic Failures
+    "ssl"                : ("A02", "Cryptographic Failures"),
+    "tls"                : ("A02", "Cryptographic Failures"),
+    "weak cipher"        : ("A02", "Cryptographic Failures"),
+    "weak encryption"    : ("A02", "Cryptographic Failures"),
+    "certificate"        : ("A02", "Cryptographic Failures"),
+    "openssl"            : ("A02", "Cryptographic Failures"),
+    # A03 — Injection
+    "rce"                : ("A03", "Injection / Remote Code Execution"),
+    "remote code"        : ("A03", "Injection / Remote Code Execution"),
+    "sql injection"      : ("A03", "Injection - SQL Injection"),
+    "sqli"               : ("A03", "Injection - SQL Injection"),
+    "xss"                : ("A03", "Injection - Cross-Site Scripting"),
+    "cross-site"         : ("A03", "Injection - Cross-Site Scripting"),
+    # A04 — Insecure Design
+    "file upload"        : ("A04", "Insecure Design - Unrestricted File Upload"),
+    # A05 — Security Misconfiguration
+    "information"        : ("A05", "Security Misconfiguration - Info Disclosure"),
+    "disclosure"         : ("A05", "Security Misconfiguration - Info Disclosure"),
+    # A06 — Vulnerable and Outdated Components
+    "buffer overflow"    : ("A06", "Vulnerable and Outdated Components"),
+    "overflow"           : ("A06", "Vulnerable and Outdated Components"),
+    # A07 — Identification and Authentication Failures
+    "authentication"     : ("A07", "Identification and Authentication Failures"),
+    "bypass"             : ("A07", "Identification and Authentication Failures"),
+    # A08 — Software and Data Integrity Failures
+    "deserialization"    : ("A08", "Software and Data Integrity Failures"),
+    # A09 — Security Logging and Monitoring Failures
+    "log injection"      : ("A09", "Security Logging and Monitoring Failures"),
+    "log forging"        : ("A09", "Security Logging and Monitoring Failures"),
+    "audit"              : ("A09", "Security Logging and Monitoring Failures"),
+    # A10 — Server-Side Request Forgery
+    "ssrf"               : ("A10", "Server-Side Request Forgery"),
+}
+
+PALABRAS_CLAVE_SEVERIDAD = {
+    "critica": ["remote code execution", "rce", "unauthenticated", "root"],
+    "alta"   : ["sql injection", "privilege escalation", "buffer overflow", "lfi", "rfi"],
+    "media"  : ["xss", "csrf", "information disclosure", "bypass"],
+    "baja"   : ["information", "version", "disclosure"],
+}
 
 
 # =============================================================================
