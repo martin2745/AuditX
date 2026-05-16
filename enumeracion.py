@@ -50,7 +50,7 @@ def ejecutar_enumeracion(objetivo: str, puertos: list, wordlist: str = None, tim
     urls_web = _construir_urls_web(objetivo, puertos)
 
     if not urls_web:
-        print(f"    [!] No se detectaron puertos web abiertos. Fase 3 omitida.")
+        print(f"    [!] No se detectaron puertos web abiertos. Fuzzing omitido.")
         return resultados
 
     for url in urls_web:
