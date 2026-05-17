@@ -40,8 +40,9 @@ HERRAMIENTAS_OPCIONALES_FUZZ = {
 
 TIMEOUT_NMAP        = 300    # 5 minutos para escaneo de puertos
 TIMEOUT_SOCKET      = 5      # Banner grabbing por socket
-FLAGS_NMAP_DEFECTO  = "-n -Pn -sV -sC"
-FLAGS_NMAP_SIGILOSO = "-n -Pn -sS -p-"
+FLAGS_NMAP_RAPIDO    = "-n -Pn -T4 -p-"     # Descubrimiento rápido de todos los puertos
+FLAGS_NMAP_SIGILOSO  = "-n -Pn -sS -p-"     # Descubrimiento sigiloso SYN de todos los puertos
+FLAGS_NMAP_VERSIONES = "-n -Pn -sV -sC -O"  # Detección de versiones, scripts y SO
 
 PUERTOS_WEB = [80, 443, 8080, 8443, 8000, 8888]
 

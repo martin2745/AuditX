@@ -6,7 +6,8 @@
 
 import subprocess
 import re
-from configuracion import Colores, TIMEOUT_NMAP, PUERTOS_WEB
+from configuracion import (Colores, TIMEOUT_NMAP, PUERTOS_WEB,
+                           FLAGS_NMAP_RAPIDO, FLAGS_NMAP_SIGILOSO, FLAGS_NMAP_VERSIONES)
 
 
 def ejecutar_descubrimiento(objetivo: str, sigiloso: bool = False) -> dict:
@@ -48,7 +49,7 @@ def ejecutar_descubrimiento(objetivo: str, sigiloso: bool = False) -> dict:
 
 def _escanear_todos_puertos(objetivo: str, sigiloso: bool, resultados: dict) -> list:
     """Escaneo TCP de todos los puertos para identificar cuáles están abiertos."""
-    flags = "-n -Pn -sS -p-" if sigiloso else "-n -Pn -T4 -p-"
+    flags = FLAGS_NMAP_SIGILOSO if sigiloso else FLAGS_NMAP_RAPIDO
     cmd   = f"nmap {flags} {objetivo}"
 
     try:
@@ -63,7 +64,7 @@ def _escanear_todos_puertos(objetivo: str, sigiloso: bool, resultados: dict) -> 
 def _escanear_versiones_servicios(objetivo: str, puertos: list, resultados: dict):
     """Detección de versiones, scripts por defecto y sistema operativo."""
     puertos_str = ",".join(map(str, puertos))
-    cmd = f"nmap -n -Pn -sV -sC -O -p {puertos_str} {objetivo}"
+    cmd = f"nmap {FLAGS_NMAP_VERSIONES} -p {puertos_str} {objetivo}"
 
     try:
         salida = _ejecutar_comando(cmd, TIMEOUT_NMAP)
