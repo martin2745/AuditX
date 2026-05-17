@@ -151,7 +151,6 @@ TIMEOUT_FFUF          = 600    # Timeout global del proceso ffuf (10 minutos)
 FFUF_HILOS            = 50
 FFUF_TIMEOUT_PETICION = 5      # Timeout por petición individual
 FFUF_CODIGOS_ESTADO   = "200,301,302,403"
-FFUF_ARCHIVO_SALIDA   = "/tmp/auditx_ffuf_salida.json"
 WORDLIST_DEFECTO      = os.path.join(DIRECTORIO_WORDLISTS, "default.txt")
 WORDLIST_SISTEMA      = "/usr/share/wordlists/dirb/common.txt"
 EXTENSIONES_FUZZ      = ".php,.html,.txt,.js,.bak"

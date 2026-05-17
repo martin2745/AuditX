@@ -7,9 +7,10 @@
 import subprocess
 import json
 import os
+import tempfile
 from configuracion import (Colores, TIMEOUT_FFUF, WORDLIST_DEFECTO, WORDLIST_SISTEMA,
                            EXTENSIONES_FUZZ, FFUF_HILOS, FFUF_TIMEOUT_PETICION,
-                           FFUF_CODIGOS_ESTADO, FFUF_ARCHIVO_SALIDA)
+                           FFUF_CODIGOS_ESTADO)
 
 
 def ejecutar_enumeracion(objetivo: str, puertos: list, wordlist: str = None, timeout_fuzz: int = None) -> dict:
@@ -112,13 +113,16 @@ def _ejecutar_ffuf(url_base: str, wordlist: str, resultados: dict, timeout: int 
     # Se usa un margen de 10 s para que ffuf termine antes de que el subprocess lo mate.
     maxtime_ffuf = max(timeout - 10, 30)
 
+    fd, archivo_salida = tempfile.mkstemp(prefix="auditx_ffuf_", suffix=".json")
+    os.close(fd)
+
     cmd = [
         "ffuf",
         "-u",        f"{url_base}/FUZZ",
         "-w",        wordlist,
         "-e",        EXTENSIONES_FUZZ,
         "-ic",
-        "-o",        FFUF_ARCHIVO_SALIDA,
+        "-o",        archivo_salida,
         "-of",       "json",
         "-mc",       FFUF_CODIGOS_ESTADO,
         "-t",        str(FFUF_HILOS),
@@ -135,19 +139,19 @@ def _ejecutar_ffuf(url_base: str, wordlist: str, resultados: dict, timeout: int 
             timeout=timeout
         )
         resultados["salida_raw"] += proceso.stdout
-        _parsear_json_ffuf(FFUF_ARCHIVO_SALIDA, url_base, resultados)
+        _parsear_json_ffuf(archivo_salida, url_base, resultados)
 
     except FileNotFoundError:
         resultados["errores"].append("ffuf no encontrado. Instalar con: apt install ffuf")
     except subprocess.TimeoutExpired:
         # Aunque raro con -maxtime, se intenta recuperar resultados parciales
-        _parsear_json_ffuf(FFUF_ARCHIVO_SALIDA, url_base, resultados)
+        _parsear_json_ffuf(archivo_salida, url_base, resultados)
         resultados["errores"].append(f"ffuf superó el timeout de {timeout}s en {url_base} (resultados parciales)")
     except Exception as e:
         resultados["errores"].append(f"Error en ffuf sobre {url_base}: {str(e)}")
     finally:
-        if os.path.exists(FFUF_ARCHIVO_SALIDA):
-            os.remove(FFUF_ARCHIVO_SALIDA)
+        if os.path.exists(archivo_salida):
+            os.remove(archivo_salida)
 
 
 def _parsear_json_ffuf(archivo_json: str, url_base: str, resultados: dict):
