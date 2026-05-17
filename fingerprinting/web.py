@@ -113,12 +113,31 @@ def _analizar_whatweb(url: str, resultados: dict, info: dict):
 
 def _parsear_salida_whatweb(salida: str, resultados: dict, info: dict):
     patron = re.compile(r"([A-Za-z][\w\-\.]+)\[([^\]]+)\]")
-    for m in patron.finditer(salida):
-        nombre, version = m.group(1), m.group(2)
+    coincidencias = patron.findall(salida)
+
+    for nombre, version in coincidencias:
         agregar_tecnologia(f"{nombre} {version}", resultados, info)
 
-        if not resultados["cms"]:
-            for cms in ("SPIP", "WordPress", "Joomla", "Drupal", "Magento"):
-                if cms.lower() in nombre.lower():
+    if not resultados["cms"]:
+        cms_conocidos = ("SPIP", "WordPress", "Joomla", "Drupal", "Magento")
+
+        # Primera pasada: nombre exacto (ej: "WordPress[5.8.1]")
+        for nombre, version in coincidencias:
+            for cms in cms_conocidos:
+                if nombre.lower() == cms.lower():
                     resultados["cms"] = info["cms"] = cms
                     resultados["version_cms"] = version
+                    break
+            if resultados["cms"]:
+                break
+
+        # Segunda pasada: nombre parcial como fallback (ej: "WordPress-Login[1.0]")
+        if not resultados["cms"]:
+            for nombre, version in coincidencias:
+                for cms in cms_conocidos:
+                    if cms.lower() in nombre.lower():
+                        resultados["cms"] = info["cms"] = cms
+                        resultados["version_cms"] = version
+                        break
+                if resultados["cms"]:
+                    break
