@@ -123,7 +123,7 @@ def _parsear_json_searchsploit(salida_json: str, termino_busqueda: str, resultad
     """Parsea la salida JSON de searchsploit y estructura los hallazgos."""
     try:
         datos    = json.loads(salida_json)
-        exploits = datos.get("RESULTS_EXPLOIT", []) + datos.get("RESULTS_SHELLCODE", [])
+        exploits = datos.get("RESULTS_EXPLOIT", [])
 
         for exploit in exploits:
             titulo = exploit.get("Title", "")
