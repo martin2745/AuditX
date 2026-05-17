@@ -114,12 +114,16 @@ def _seccion_resumen(objetivo, fecha_str, descubrimiento, fingerprinting, vulner
     criticas      = vulnerabilidades.get("cantidad_criticas", 0)
     altas         = vulnerabilidades.get("cantidad_altas", 0)
 
-    if criticas > 0:
+    if total_vulns == 0:
+        nivel_riesgo = "BAJO"
+    elif criticas > 0:
         nivel_riesgo = "CRITICO"
     elif altas > 0:
         nivel_riesgo = "ALTO"
-    else:
+    elif vulnerabilidades.get("cantidad_medias", 0) > 0:
         nivel_riesgo = "MEDIO"
+    else:
+        nivel_riesgo = "BAJO"
 
     info_cms = ""
     if fingerprinting.get("cms"):
