@@ -342,6 +342,12 @@ _No se encontraron exploits conocidos para las tecnologias detectadas._"""
             if vuln.get("codigo_owasp") else "N/A"
         )
 
+        recomendacion = vuln.get("recomendacion", "")
+        bloque_recomendacion = (
+            f"\n**Recomendacion:** {recomendacion}\n"
+            if recomendacion else ""
+        )
+
         tarjetas_vulns += f"""
 ### [{texto_sev}] {vuln['titulo']}
 
@@ -354,7 +360,7 @@ _No se encontraron exploits conocidos para las tecnologias detectadas._"""
 | Tipo            | {vuln.get('tipo', 'N/A')}        |
 | Fecha           | {vuln.get('fecha', 'N/A')}       |
 | Categoria OWASP | {badge_owasp}                    |
-
+{bloque_recomendacion}
 ---"""
 
     return f"""## {num_seccion}. Vulnerabilidades Identificadas
