@@ -66,8 +66,8 @@ def ejecutar_fingerprinting(objetivo: str, puertos: list) -> dict:
         print(f"    {Colores.ERROR}[!] No hay puertos abiertos para analizar.{Colores.FIN}")
         return resultados
 
-    for puerto in lista_puertos:
-        tipo = _clasificar_servicio(puerto)
+    for puerto, servicio_nmap in lista_puertos:
+        tipo = _clasificar_servicio(puerto, servicio_nmap)
         print(f"    [~] Puerto {puerto}/tcp — {tipo}")
 
         try:
@@ -88,15 +88,33 @@ def ejecutar_fingerprinting(objetivo: str, puertos: list) -> dict:
 # =============================================================================
 
 def _normalizar_puertos(puertos: list) -> list:
-    """Convierte la lista de puertos a [int, ...] independientemente del formato de entrada."""
+    """Convierte la lista de puertos a [(int, servicio_nmap), ...] independientemente del formato de entrada."""
     if not puertos:
         return []
     if isinstance(puertos[0], dict):
-        return [p["puerto"] for p in puertos]
-    return list(puertos)
+        return [(p["puerto"], p.get("servicio", "")) for p in puertos]
+    return [(p, "") for p in puertos]
 
 
-def _clasificar_servicio(puerto: int) -> str:
+# Variantes de nombres de servicio que devuelve nmap mapeadas a claves internas
+_ALIAS_SERVICIOS_NMAP = {
+    "http-alt"      : "http",
+    "http-proxy"    : "http",
+    "ssl/http"      : "https",
+    "https-alt"     : "https",
+    "microsoft-ds"  : "smb",
+    "netbios-ssn"   : "smb",
+    "ms-wbt-server" : "rdp",
+}
+
+def _clasificar_servicio(puerto: int, servicio_nmap: str = "") -> str:
+    """Determina el tipo de servicio priorizando el nombre detectado por nmap."""
+    if servicio_nmap:
+        nombre = servicio_nmap.lower().strip()
+        if nombre in _DESPACHADOR:
+            return nombre
+        if nombre in _ALIAS_SERVICIOS_NMAP:
+            return _ALIAS_SERVICIOS_NMAP[nombre]
     return MAPA_SERVICIOS.get(puerto, "desconocido")
 
 
