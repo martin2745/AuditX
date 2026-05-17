@@ -107,17 +107,23 @@ def _construir_urls_web(objetivo: str, puertos: list) -> list:
 
 def _ejecutar_ffuf(url_base: str, wordlist: str, resultados: dict, timeout: int = TIMEOUT_FFUF):
     """Ejecuta ffuf sobre la URL base buscando directorios y archivos."""
+    # -maxtime hace que ffuf se detenga limpiamente antes del timeout externo
+    # y escriba el JSON de resultados parciales antes de salir.
+    # Se usa un margen de 10 s para que ffuf termine antes de que el subprocess lo mate.
+    maxtime_ffuf = max(timeout - 10, 30)
+
     cmd = [
         "ffuf",
-        "-u",       f"{url_base}/FUZZ",
-        "-w",       wordlist,
-        "-e",       EXTENSIONES_FUZZ,
+        "-u",        f"{url_base}/FUZZ",
+        "-w",        wordlist,
+        "-e",        EXTENSIONES_FUZZ,
         "-ic",
-        "-o",       FFUF_ARCHIVO_SALIDA,
-        "-of",      "json",
-        "-mc",      FFUF_CODIGOS_ESTADO,
-        "-t",       str(FFUF_HILOS),
-        "-timeout", str(FFUF_TIMEOUT_PETICION),
+        "-o",        FFUF_ARCHIVO_SALIDA,
+        "-of",       "json",
+        "-mc",       FFUF_CODIGOS_ESTADO,
+        "-t",        str(FFUF_HILOS),
+        "-timeout",  str(FFUF_TIMEOUT_PETICION),
+        "-maxtime",  str(maxtime_ffuf),
     ]
 
     try:
@@ -134,7 +140,9 @@ def _ejecutar_ffuf(url_base: str, wordlist: str, resultados: dict, timeout: int 
     except FileNotFoundError:
         resultados["errores"].append("ffuf no encontrado. Instalar con: apt install ffuf")
     except subprocess.TimeoutExpired:
-        resultados["errores"].append(f"ffuf superó el timeout de {timeout}s en {url_base}")
+        # Aunque raro con -maxtime, se intenta recuperar resultados parciales
+        _parsear_json_ffuf(FFUF_ARCHIVO_SALIDA, url_base, resultados)
+        resultados["errores"].append(f"ffuf superó el timeout de {timeout}s en {url_base} (resultados parciales)")
     except Exception as e:
         resultados["errores"].append(f"Error en ffuf sobre {url_base}: {str(e)}")
     finally:
