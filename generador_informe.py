@@ -14,7 +14,8 @@ def generar_informe(
     resultados_descubrimiento   : dict,
     resultados_fingerprinting   : dict,
     resultados_enumeracion      : dict,
-    resultados_vulnerabilidades : dict
+    resultados_vulnerabilidades : dict,
+    ruta_salida                 : str = None
 ) -> str:
     """
     Genera el informe completo de auditoría en Markdown.
@@ -24,12 +25,17 @@ def generar_informe(
     """
     print(f"\n[*] Generando informe de auditoria...")
 
-    os.makedirs(DIRECTORIO_INFORMES, exist_ok=True)
+    marca_tiempo    = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    marca_tiempo  = datetime.now().strftime("%Y%m%d_%H%M%S")
-    objetivo_limpio = objetivo.replace(".", "_").replace(":", "_")
-    nombre_archivo  = f"AuditX_Informe_{objetivo_limpio}_{marca_tiempo}.md"
-    ruta_archivo    = os.path.join(DIRECTORIO_INFORMES, nombre_archivo)
+    if ruta_salida:
+        directorio = os.path.dirname(os.path.abspath(ruta_salida))
+        os.makedirs(directorio, exist_ok=True)
+        ruta_archivo = ruta_salida
+    else:
+        os.makedirs(DIRECTORIO_INFORMES, exist_ok=True)
+        objetivo_limpio = objetivo.replace(".", "_").replace(":", "_")
+        nombre_archivo  = f"AuditX_Informe_{objetivo_limpio}_{marca_tiempo}.md"
+        ruta_archivo    = os.path.join(DIRECTORIO_INFORMES, nombre_archivo)
 
     contenido = _construir_informe(
         objetivo, marca_tiempo,

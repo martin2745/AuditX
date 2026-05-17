@@ -261,7 +261,8 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
             resultados_descubrimiento   = resultados_descubrimiento,
             resultados_fingerprinting   = resultados_fingerprinting,
             resultados_enumeracion      = resultados_enumeracion,
-            resultados_vulnerabilidades = resultados_vulnerabilidades
+            resultados_vulnerabilidades = resultados_vulnerabilidades,
+            ruta_salida                 = args.salida
         )
 
      # Resumen final
