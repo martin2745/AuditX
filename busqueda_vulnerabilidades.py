@@ -48,6 +48,7 @@ def ejecutar_busqueda_vulnerabilidades(resultados_descubrimiento: dict, resultad
         print(f"    [~] Buscando exploits para: {termino}")
         _buscar_exploitdb(termino, resultados)
 
+    _deduplicar_vulnerabilidades(resultados)
     _contar_por_severidad(resultados)
     _construir_resumen_owasp(resultados)
     _imprimir_resumen_vulnerabilidades(resultados)
@@ -227,6 +228,18 @@ def _generar_recomendacion(titulo: str) -> str:
         "Revisar la configuración de seguridad del servicio afectado. "
         "Consultar el advisory oficial del CVE para medidas específicas."
     )
+
+
+def _deduplicar_vulnerabilidades(resultados: dict):
+    """Elimina exploits duplicados manteniendo la primera aparición por ruta de exploit."""
+    vistas = set()
+    unicas = []
+    for vuln in resultados["vulnerabilidades"]:
+        clave = vuln.get("ruta") or vuln.get("titulo")
+        if clave and clave not in vistas:
+            vistas.add(clave)
+            unicas.append(vuln)
+    resultados["vulnerabilidades"] = unicas
 
 
 def _contar_por_severidad(resultados: dict):
