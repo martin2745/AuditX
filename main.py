@@ -293,8 +293,8 @@ def auditar_objetivo(objetivo: str, args: argparse.Namespace):
 def principal():
     try:
         args = parsear_argumentos()
-        verificar_herramientas(fuzz=args.fuzz)
         print(BANNER)
+        verificar_herramientas(fuzz=args.fuzz)
 
         if args.objetivo:
             auditar_objetivo(args.objetivo, args)
