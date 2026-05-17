@@ -50,7 +50,7 @@ def ejecutar_descubrimiento(objetivo: str, sigiloso: bool = False) -> dict:
 def _escanear_todos_puertos(objetivo: str, sigiloso: bool, resultados: dict) -> list:
     """Escaneo TCP de todos los puertos para identificar cuáles están abiertos."""
     flags = FLAGS_NMAP_SIGILOSO if sigiloso else FLAGS_NMAP_RAPIDO
-    cmd   = f"nmap {flags} {objetivo}"
+    cmd   = ["nmap"] + flags.split() + [objetivo]
 
     try:
         salida = _ejecutar_comando(cmd, TIMEOUT_NMAP)
@@ -64,7 +64,7 @@ def _escanear_todos_puertos(objetivo: str, sigiloso: bool, resultados: dict) -> 
 def _escanear_versiones_servicios(objetivo: str, puertos: list, resultados: dict):
     """Detección de versiones, scripts por defecto y sistema operativo."""
     puertos_str = ",".join(map(str, puertos))
-    cmd = f"nmap {FLAGS_NMAP_VERSIONES} -p {puertos_str} {objetivo}"
+    cmd = ["nmap"] + FLAGS_NMAP_VERSIONES.split() + ["-p", puertos_str, objetivo]
 
     try:
         salida = _ejecutar_comando(cmd, TIMEOUT_NMAP)
@@ -144,10 +144,10 @@ def _imprimir_resumen_descubrimiento(resultados: dict):
         print(f"        {Colores.ERROR}[!] {error}{Colores.FIN}")
 
 
-def _ejecutar_comando(cmd: str, timeout: int) -> str:
+def _ejecutar_comando(cmd: list, timeout: int) -> str:
     """Ejecuta un comando de sistema y devuelve su salida como string."""
     proceso = subprocess.run(
-        cmd.split(),
+        cmd,
         capture_output=True,
         text=True,
         timeout=timeout
