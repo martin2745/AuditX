@@ -94,7 +94,7 @@ def _seccion_indice(hay_owasp: bool) -> str:
 
     cuerpo_indice = "\n".join(entradas)
 
-    return f"""## Índice
+    return f"""## Indice
 
 {cuerpo_indice}
 
@@ -258,23 +258,48 @@ def _seccion_fingerprinting(fingerprinting: dict) -> str:
 
 
 def _seccion_enumeracion(enumeracion: dict) -> str:
+    wordlist   = enumeracion.get("wordlist_usada", "N/A")
+    hallazgos  = enumeracion.get("hallazgos", [])
     interesantes = enumeracion.get("interesantes", [])
+    errores    = enumeracion.get("errores", [])
+    urls_fuzzeadas = enumeracion.get("urls_fuzzeadas", [])
 
-    if not interesantes:
-        hallazgos_md = "_No se encontraron rutas de interes._"
+    # Caso 1: módulo no ejecutado (wordlist = N/A y sin URLs fuzzeadas)
+    if wordlist == "N/A" and not urls_fuzzeadas:
+        return """## 4. Enumeracion de Directorios y Archivos
+
+_Modulo de fuzzing no ejecutado. Usa `--fuzz` para activarlo._"""
+
+    # Caso 2: sin URLs web detectadas (wordlist resuelta pero sin objetivos)
+    if wordlist != "N/A" and not urls_fuzzeadas:
+        return f"""## 4. Enumeracion de Directorios y Archivos
+
+**Wordlist seleccionada:** `{wordlist}`
+
+_No se detectaron puertos web abiertos en el objetivo. Fuzzing omitido._"""
+
+    # Caso 3: fuzzing ejecutado — mostrar resultados (o ausencia de ellos)
+    if errores:
+        aviso_errores = "\n> **Avisos:** " + " | ".join(errores) + "\n"
+    else:
+        aviso_errores = ""
+
+    if not hallazgos:
+        hallazgos_md = "_ffuf no obtuvo respuestas con los codigos filtrados (200, 301, 302, 403)._"
+    elif not interesantes:
+        hallazgos_md = "_No se identificaron rutas de interes entre las descubiertas._"
     else:
         hallazgos_md = "| URL | Estado | Tamano |\n|-----|--------|--------|\n"
         for h in interesantes:
             hallazgos_md += f"| `{h['url']}` | {h['estado']} | {h['tamano']} bytes |\n"
 
-    total = len(enumeracion.get("hallazgos", []))
-
     return f"""## 4. Enumeracion de Directorios y Archivos
 
-**Wordlist utilizada:** `{enumeracion.get('wordlist_usada', 'N/A')}`
-**Total de rutas analizadas:** {total}
-**Rutas de interes encontradas:** {len(interesantes)}
-
+**Wordlist utilizada:** `{wordlist}`
+**URLs analizadas:** {', '.join(f'`{u}`' for u in urls_fuzzeadas) if urls_fuzzeadas else 'N/A'}
+**Total de rutas descubiertas:** {len(hallazgos)}
+**Rutas de interes:** {len(interesantes)}
+{aviso_errores}
 ### Recursos destacados
 
 {hallazgos_md}"""
