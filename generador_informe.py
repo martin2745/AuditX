@@ -228,34 +228,42 @@ def _seccion_fingerprinting(fingerprinting: dict) -> str:
         if clave.startswith("smb") and info.get("firmar") == "disabled":
             smb_warning = "\n> **[!] SMB message signing deshabilitado** — riesgo de ataques relay.\n"
 
-    # Sección web: CMS y cabeceras de seguridad (solo si hay servicios HTTP/HTTPS)
-    hay_web = any(k.startswith(("http", "https")) for k in servicios)
+    # Sección web: CMS y cabeceras de seguridad por URL (solo si hay servicios HTTP/HTTPS)
+    servicios_web = {k: v for k, v in servicios.items() if k.startswith(("http", "https"))}
     seccion_web = ""
-    if hay_web:
-        seguridad    = fingerprinting.get("cabeceras_seguridad", {})
-        presentes    = seguridad.get("presentes", [])
-        ausentes     = seguridad.get("ausentes", [])
-        presentes_md = "\n".join([f"- [PRESENTE] `{h}`" for h in presentes]) or "- Ninguna"
-        ausentes_md  = "\n".join([f"- [AUSENTE]  `{h}`" for h in ausentes])  or "- Ninguna"
-
+    if servicios_web:
         cms_info = ""
         if fingerprinting.get("cms"):
             cms_info = f"\n**CMS detectado:** {fingerprinting['cms']} {fingerprinting.get('version_cms', '')}"
+
+        bloques_cabeceras = ""
+        for clave, info in servicios_web.items():
+            url      = info.get("url", clave)
+            seg      = info.get("cabeceras_seguridad", {})
+            presentes = seg.get("presentes", [])
+            ausentes  = seg.get("ausentes", [])
+            presentes_md = "\n".join([f"- [PRESENTE] `{h}`" for h in presentes]) or "- Ninguna"
+            ausentes_md  = "\n".join([f"- [AUSENTE]  `{h}`" for h in ausentes])  or "- Ninguna"
+
+            bloques_cabeceras += f"""
+##### `{url}`
+
+**Presentes:**
+{presentes_md}
+
+**Ausentes (recomendadas):**
+{ausentes_md}
+"""
 
         seccion_web = f"""
 ### Servicios web{cms_info}
 
 **Servidor web:** {fingerprinting.get('servidor_web', 'No detectado')}
 
-#### Cabeceras de seguridad HTTP (OWASP A05)
+#### Cabeceras de seguridad HTTP por URL (OWASP A05)
 
 > Las cabeceras ausentes constituyen una **Security Misconfiguration (A05)**.
-
-**Presentes:**
-{presentes_md}
-
-**Ausentes (recomendadas):**
-{ausentes_md}"""
+{bloques_cabeceras}"""
 
     return f"""## 3. Fingerprinting de Servicios
 
