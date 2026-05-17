@@ -1,7 +1,7 @@
 # =============================================================================
 # AuditX - busqueda_vulnerabilidades.py
 # =============================================================================
-# Fase 4: Búsqueda de vulnerabilidades conocidas (CVEs) mediante searchsploit.
+# Fase 3: Búsqueda de vulnerabilidades conocidas (CVEs) mediante searchsploit.
 # Clasifica los hallazgos según el estándar OWASP Top 10 2021.
 # =============================================================================
 
