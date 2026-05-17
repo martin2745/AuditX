@@ -6,7 +6,7 @@
 # =============================================================================
 
 import re
-from configuracion import Colores, TIMEOUT_HTTP, TIMEOUT_WHATWEB, WHATWEB_AGRESIVIDAD, WHATWEB_OPEN_TIMEOUT, WHATWEB_READ_TIMEOUT
+from configuracion import Colores, TIMEOUT_HTTP, TIMEOUT_WHATWEB, WHATWEB_AGRESIVIDAD
 from .base import ejecutar_comando, agregar_tecnologia
 
 
@@ -100,13 +100,7 @@ def _detectar_cms_cabeceras(cabeceras: dict, resultados: dict, info: dict):
 # =============================================================================
 
 def _analizar_whatweb(url: str, resultados: dict, info: dict):
-    cmd = [
-        "whatweb", "--no-errors",
-        "-a", str(WHATWEB_AGRESIVIDAD),
-        f"--open-timeout={WHATWEB_OPEN_TIMEOUT}",
-        f"--read-timeout={WHATWEB_READ_TIMEOUT}",
-        url,
-    ]
+    cmd = ["whatweb", "--no-errors", "-a", str(WHATWEB_AGRESIVIDAD), url]
     try:
         salida = ejecutar_comando(cmd, timeout=TIMEOUT_WHATWEB)
         resultados["salida_raw"] += "\n" + salida
@@ -119,31 +113,12 @@ def _analizar_whatweb(url: str, resultados: dict, info: dict):
 
 def _parsear_salida_whatweb(salida: str, resultados: dict, info: dict):
     patron = re.compile(r"([A-Za-z][\w\-\.]+)\[([^\]]+)\]")
-    coincidencias = patron.findall(salida)
-
-    for nombre, version in coincidencias:
+    for m in patron.finditer(salida):
+        nombre, version = m.group(1), m.group(2)
         agregar_tecnologia(f"{nombre} {version}", resultados, info)
 
-    if not resultados["cms"]:
-        cms_conocidos = ("SPIP", "WordPress", "Joomla", "Drupal", "Magento")
-
-        # Primera pasada: nombre exacto (ej: "WordPress[5.8.1]")
-        for nombre, version in coincidencias:
-            for cms in cms_conocidos:
-                if nombre.lower() == cms.lower():
+        if not resultados["cms"]:
+            for cms in ("SPIP", "WordPress", "Joomla", "Drupal", "Magento"):
+                if cms.lower() in nombre.lower():
                     resultados["cms"] = info["cms"] = cms
                     resultados["version_cms"] = version
-                    break
-            if resultados["cms"]:
-                break
-
-        # Segunda pasada: nombre parcial como fallback (ej: "WordPress-Login[1.0]")
-        if not resultados["cms"]:
-            for nombre, version in coincidencias:
-                for cms in cms_conocidos:
-                    if cms.lower() in nombre.lower():
-                        resultados["cms"] = info["cms"] = cms
-                        resultados["version_cms"] = version
-                        break
-                if resultados["cms"]:
-                    break
