@@ -6,7 +6,7 @@
 # =============================================================================
 
 import re
-from configuracion import Colores, TIMEOUT_HTTP, TIMEOUT_WHATWEB, WHATWEB_AGRESIVIDAD
+from configuracion import Colores, TIMEOUT_HTTP, TIMEOUT_WHATWEB, WHATWEB_AGRESIVIDAD, WHATWEB_OPEN_TIMEOUT, WHATWEB_READ_TIMEOUT
 from .base import ejecutar_comando, agregar_tecnologia
 
 
@@ -100,7 +100,13 @@ def _detectar_cms_cabeceras(cabeceras: dict, resultados: dict, info: dict):
 # =============================================================================
 
 def _analizar_whatweb(url: str, resultados: dict, info: dict):
-    cmd = ["whatweb", "--no-errors", "-a", str(WHATWEB_AGRESIVIDAD), url]
+    cmd = [
+        "whatweb", "--no-errors",
+        "-a", str(WHATWEB_AGRESIVIDAD),
+        f"--open-timeout={WHATWEB_OPEN_TIMEOUT}",
+        f"--read-timeout={WHATWEB_READ_TIMEOUT}",
+        url,
+    ]
     try:
         salida = ejecutar_comando(cmd, timeout=TIMEOUT_WHATWEB)
         resultados["salida_raw"] += "\n" + salida

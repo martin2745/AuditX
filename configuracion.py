@@ -76,10 +76,12 @@ MAPA_SERVICIOS = {
 # FASE 2 — Fingerprinting de servicios (whatweb, curl)
 # =============================================================================
 
-TIMEOUT_HTTP    = 10    # Peticiones HTTP
-TIMEOUT_COMANDO = 30    # Subprocesos genéricos (nmap scripts, etc.)
-TIMEOUT_WHATWEB = 60    # whatweb puede tardar más según el objetivo
-WHATWEB_AGRESIVIDAD = 1 # 1=pasivo, 3=agresivo (más peticiones, más lento)
+TIMEOUT_HTTP             = 10   # Peticiones HTTP
+TIMEOUT_COMANDO          = 30   # Subprocesos genéricos (nmap scripts, etc.)
+TIMEOUT_WHATWEB          = 40   # Límite de proceso para whatweb
+WHATWEB_AGRESIVIDAD      = 1    # 1=pasivo, 3=agresivo (más peticiones, más lento)
+WHATWEB_OPEN_TIMEOUT     = 8    # --open-timeout: tiempo máximo de conexión por petición
+WHATWEB_READ_TIMEOUT     = 15   # --read-timeout: tiempo máximo de lectura por petición
 
 
 # =============================================================================
