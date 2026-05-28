@@ -84,6 +84,8 @@ Menú interactivo  ──o──  -t IP  ──o──  -n RED
                      └──► [--informe]  Módulo opcional: generador_informe.py
 ```
 
+Para un mayor nivel de detalle se recomienda ver el [diagrama de flujo completo](docs/flujo_auditx.md).
+
 ---
 
 ## Requisitos
