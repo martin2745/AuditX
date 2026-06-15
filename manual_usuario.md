@@ -53,7 +53,7 @@
 
 1. **Descubrimiento** — escaneo de puertos y detección de servicios con `nmap`.
 2. **Fingerprinting** — identificación de tecnologías web (servidor, CMS, versiones) con `curl` y `whatweb`.
-3. **Búsqueda de vulnerabilidades** — búsqueda de CVEs en Exploit-DB con `searchsploit`, clasificados según **OWASP Top 10 2021**.
+3. **Búsqueda de vulnerabilidades** — búsqueda de CVEs en Exploit-DB con `searchsploit`, clasificados según **OWASP Top 10 2025**.
 
 **Módulos opcionales** (se activan con sus flags):
 
@@ -441,7 +441,7 @@ Por cada exploit encontrado:
   - **ALTO:** `sql injection`, `privilege escalation`, `buffer overflow`, `lfi`, `rfi`
   - **MEDIO:** `xss`, `csrf`, `information disclosure`, `bypass`
   - **BAJO:** `information`, `version`, `disclosure`
-- **Mapea a OWASP Top 10 2021** (A01–A10)
+- **Mapea a OWASP Top 10 2025** (A01–A10)
 
 Los resultados se muestran agrupados por categoría OWASP ordenadas de A01 a A10, con el CVE de cada vulnerabilidad. Esta misma estructura se traslada al informe si se genera con `--informe`.
 
@@ -580,7 +580,7 @@ El informe (activado con `--informe`) es un documento Markdown con índice naveg
 2. Descubrimiento de Puertos y Servicios
 3. Fingerprinting de Servicios
 4. Enumeracion de Directorios y Archivos
-5. Clasificacion OWASP Top 10 2021        ← solo si hay vulnerabilidades clasificadas
+5. Clasificacion OWASP Top 10 2025        ← solo si hay vulnerabilidades clasificadas
 6. Vulnerabilidades Identificadas
 ```
 
@@ -600,7 +600,7 @@ Tabla de servicios analizados con detalles (versión, banner, URL). Advertencias
 **4. Enumeración de Directorios y Archivos**  
 Wordlist utilizada, total de rutas analizadas y tabla de recursos de interés con código HTTP y tamaño de respuesta. Si no se ejecutó `--fuzz`, la sección indica que no se realizó enumeración.
 
-**5. Clasificación OWASP Top 10 2021** *(si hay datos)*  
+**5. Clasificación OWASP Top 10 2025** *(si hay datos)*  
 Agrupación de todas las vulnerabilidades por su categoría OWASP (A01–A10), ordenadas de A01 a A10. Para cada categoría: número de hallazgos, CVE y título de cada vulnerabilidad.
 
 **6. Vulnerabilidades Identificadas**  

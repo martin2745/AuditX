@@ -2,7 +2,7 @@
 # AuditX - busqueda_vulnerabilidades.py
 # =============================================================================
 # Fase 3: Búsqueda de vulnerabilidades conocidas (CVEs) mediante searchsploit.
-# Clasifica los hallazgos según el estándar OWASP Top 10 2021.
+# Clasifica los hallazgos según el estándar OWASP Top 10 2025.
 # =============================================================================
 
 import subprocess
@@ -172,7 +172,7 @@ def _extraer_cve(codes: str, titulo: str) -> str:
 
 
 def _mapear_owasp(titulo: str) -> tuple:
-    """Mapea el título de un exploit a su categoría del OWASP Top 10 2021."""
+    """Mapea el título de un exploit a su categoría del OWASP Top 10 2025."""
     titulo_minuscula = titulo.lower()
     for palabra_clave, (codigo, nombre) in MAPEO_OWASP.items():
         if palabra_clave in titulo_minuscula:
@@ -283,7 +283,7 @@ def _imprimir_resumen_vulnerabilidades(resultados: dict):
         print(f"        Medias   : {resultados['cantidad_medias']}")
         print(f"        Bajas    : {resultados['cantidad_bajas']}")
 
-        print(f"\n        Clasificación OWASP Top 10:")
+        print(f"\n        Clasificación OWASP Top 10 2025:")
         for categoria_owasp, hallazgos in sorted(resultados["hallazgos_owasp"].items()):
             print(f"\n          [{categoria_owasp}]  ({len(hallazgos)} hallazgos)")
             for h in hallazgos:

@@ -93,7 +93,7 @@ def _seccion_indice(hay_owasp: bool) -> str:
     ]
 
     if hay_owasp:
-        entradas.append("5. [Clasificacion OWASP Top 10 2021](#5-clasificacion-owasp-top-10-2021)")
+        entradas.append("5. [Clasificacion OWASP Top 10 2025](#5-clasificacion-owasp-top-10-2025)")
         entradas.append("6. [Vulnerabilidades Identificadas](#6-vulnerabilidades-identificadas)")
     else:
         entradas.append("5. [Vulnerabilidades Identificadas](#5-vulnerabilidades-identificadas)")
@@ -260,9 +260,9 @@ def _seccion_fingerprinting(fingerprinting: dict) -> str:
 
 **Servidor web:** {fingerprinting.get('servidor_web', 'No detectado')}
 
-#### Cabeceras de seguridad HTTP por URL (OWASP A05)
+#### Cabeceras de seguridad HTTP por URL (OWASP A02:2025)
 
-> Las cabeceras ausentes constituyen una **Security Misconfiguration (A05)**.
+> Las cabeceras ausentes constituyen una **Security Misconfiguration (A02:2025)**.
 {bloques_cabeceras}"""
 
     return f"""## 3. Fingerprinting de Servicios
@@ -341,39 +341,24 @@ _No se encontraron exploits conocidos para las tecnologias detectadas._"""
 
     lista_ordenada = sorted(lista, key=lambda v: v.get("codigo_owasp", "A99"))
 
-    tarjetas_vulns = ""
+    filas = ""
     for vuln in lista_ordenada:
-        severidad   = vuln.get("severidad", "media")
-        texto_sev   = etiqueta_severidad.get(severidad, "MEDIO")
-        badge_owasp = (
-            f"`{vuln['codigo_owasp']}` {vuln['nombre_owasp']}"
-            if vuln.get("codigo_owasp") else "N/A"
-        )
-
-        recomendacion = vuln.get("recomendacion", "")
-        bloque_recomendacion = (
-            f"\n**Recomendacion:** {recomendacion}\n"
-            if recomendacion else ""
-        )
-
-        tarjetas_vulns += f"""
-### [{texto_sev}] {vuln['titulo']}
-
-| Campo           | Detalle                          |
-|-----------------|----------------------------------|
-| CVE             | {vuln.get('cve', 'N/A')}         |
-| Severidad       | {texto_sev}                      |
-| Busqueda        | `{vuln['termino_busqueda']}`     |
-| Ruta exploit    | `{vuln.get('ruta', 'N/A')}`      |
-| Tipo            | {vuln.get('tipo', 'N/A')}        |
-| Fecha           | {vuln.get('fecha', 'N/A')}       |
-| Categoria OWASP | {badge_owasp}                    |
-{bloque_recomendacion}
----"""
+        texto_sev   = etiqueta_severidad.get(vuln.get("severidad", "media"), "MEDIO")
+        codigo_owasp = vuln.get("codigo_owasp", "N/A")
+        cve          = vuln.get("cve", "N/A")
+        titulo       = vuln.get("titulo", "N/A")
+        filas += f"| {cve} | {titulo} | {texto_sev} | {codigo_owasp} | Pendiente |\n"
 
     return f"""## {num_seccion}. Vulnerabilidades Identificadas
 
-{tarjetas_vulns}"""
+> **Nota metodologica:** Los siguientes hallazgos provienen de busquedas automatizadas
+> en Exploit-DB mediante searchsploit. Representan exploits publicos conocidos para las
+> versiones detectadas, pero requieren verificacion manual para confirmar si el sistema
+> objetivo es realmente vulnerable. No deben interpretarse como vulnerabilidades confirmadas.
+
+| CVE | Titulo | Severidad | OWASP | Verificado |
+|-----|--------|-----------|-------|------------|
+{filas}"""
 
 
 def _seccion_owasp(vulnerabilidades: dict) -> str:
@@ -387,11 +372,12 @@ def _seccion_owasp(vulnerabilidades: dict) -> str:
             cve_str = f"`{h['cve']}`" if h['cve'] != "N/A" else "Sin CVE"
             cuerpo_owasp += f"- {cve_str} — {h['titulo']}\n"
 
-    return f"""## 5. Clasificacion OWASP Top 10 2021
+    return f"""## 5. Clasificacion OWASP Top 10 2025
 
 > Cada vulnerabilidad identificada ha sido mapeada a su categoria correspondiente
-> del estandar OWASP Top 10 2021 para contextualizar el riesgo en el marco
-> de referencia de la industria.
+> del estandar OWASP Top 10 2025 para contextualizar el riesgo en el marco
+> de referencia de la industria. Se recomienda verificar esta clasificación por
+> parte del equipo de seguridad.
 
 {cuerpo_owasp}"""
 

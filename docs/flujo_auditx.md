@@ -99,7 +99,7 @@ flowchart TD
 
     F3_TERMS --> F3_SEARCH["Para cada término:\nsearchsploit --json <término>\n→ Parsear RESULTS_EXPLOIT"]
 
-    F3_SEARCH --> F3_PARSE["Por cada exploit encontrado:\n· Extraer CVE (campo Codes → regex en título)\n· Clasificar categoría OWASP Top 10 2021\n  (A01 Broken Access · A02 Crypto · A03 Injection...)\n· Clasificar severidad\n  (crítica · alta · media · baja)\n· Generar recomendación de mitigación"]
+    F3_SEARCH --> F3_PARSE["Por cada exploit encontrado:\n· Extraer CVE (campo Codes → regex en título)\n· Clasificar categoría OWASP Top 10 2025\n  (A01 Broken Access · A02 Crypto · A03 Injection...)\n· Clasificar severidad\n  (crítica · alta · media · baja)\n· Generar recomendación de mitigación"]
 
     F3_PARSE --> F3_POST["Post-procesado:\nDeduplicar por ruta de exploit\nContar por severidad\nAgrupar por categoría OWASP"]
 
@@ -114,7 +114,7 @@ flowchart TD
 
     RPT_Q -- "Sí" --> RPT["generador_informe.py\ngenerar_informe()"]
 
-    RPT --> RPT_SECS["Estructura del informe Markdown:\n1. Resumen ejecutivo\n   (riesgo: CRÍTICO · ALTO · MEDIO · BAJO)\n2. Descubrimiento de puertos\n3. Fingerprinting de servicios\n   (cabeceras de seguridad por URL)\n4. Enumeración de directorios (si --fuzz)\n5. Clasificación OWASP Top 10 2021\n6. Vulnerabilidades detalladas"]
+    RPT --> RPT_SECS["Estructura del informe Markdown:\n1. Resumen ejecutivo\n   (riesgo: CRÍTICO · ALTO · MEDIO · BAJO)\n2. Descubrimiento de puertos\n3. Fingerprinting de servicios\n   (cabeceras de seguridad por URL)\n4. Enumeración de directorios (si --fuzz)\n5. Clasificación OWASP Top 10 2025\n6. Vulnerabilidades detalladas"]
 
     RPT_SECS --> RPT_SAVE["Guardar informe:\ninformes/AuditX_Informe_<IP>_<YYYYMMDD_HHMMSS>.md\n(o ruta personalizada con -o <ruta>)"]
 

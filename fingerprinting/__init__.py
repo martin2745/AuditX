@@ -140,7 +140,7 @@ def _imprimir_resumen(resultados: dict):
 
     seg = resultados.get("cabeceras_seguridad", {})
     if seg.get("ausentes"):
-        print(f"\n        [!] Cabeceras HTTP de seguridad ausentes (OWASP A05):")
+        print(f"\n        [!] Cabeceras HTTP de seguridad ausentes (OWASP A02:2025):")
         for cab in seg["ausentes"]:
             print(f"          - {cab}")
 

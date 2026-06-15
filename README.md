@@ -183,14 +183,14 @@ Estructura:
 2. **Descubrimiento de Puertos y Servicios** — tabla de puertos, SO, metadatos HTTP
 3. **Fingerprinting de Servicios** — servidor, CMS, tecnologías, cabeceras de seguridad
 4. **Enumeración de Directorios** — rutas descubiertas (si se usó `--fuzz`)
-5. **Clasificación OWASP Top 10 2021** — hallazgos agrupados por categoría con CVE
+5. **Clasificación OWASP Top 10 2025** — hallazgos agrupados por categoría con CVE
 6. **Vulnerabilidades Identificadas** — fichas por exploit con CVE, severidad y categoría OWASP
 
 ---
 
 ## Referencias
 
-- [OWASP Top 10 2021](https://owasp.org/Top10/)
+- [OWASP Top 10 2025](https://owasp.org/Top10/)
 - [PTES - Penetration Testing Execution Standard](http://www.pentest-standard.org/)
 - [OWASP WSTG](https://owasp.org/www-project-web-security-testing-guide/)
 - [Exploit-DB](https://www.exploit-db.com/)

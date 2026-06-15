@@ -68,7 +68,7 @@ def _parsear_cabeceras(respuesta_raw: str) -> dict:
 
 
 def _verificar_cabeceras_seguridad(cabeceras: dict) -> dict:
-    """Verifica cabeceras de seguridad HTTP recomendadas (OWASP A05)."""
+    """Verifica cabeceras de seguridad HTTP recomendadas (OWASP A02:2025)."""
     requeridas = {
         "strict-transport-security": "HSTS",
         "x-content-type-options"   : "X-Content-Type-Options",

@@ -91,51 +91,53 @@ WHATWEB_READ_TIMEOUT     = 15   # --read-timeout: tiempo máximo de lectura por 
 MAX_TERMINOS_SEARCHSPLOIT = 8
 MAX_PALABRAS_VERSION      = 2    # Palabras del string de versión usadas en la búsqueda
 SEVERIDAD_DEFECTO         = "media"
-OWASP_CATEGORIA_DEFECTO   = ("A06", "Vulnerable and Outdated Components")
+OWASP_CATEGORIA_DEFECTO   = ("A03:2025", "Software Supply Chain Failures")
 
 MAPEO_OWASP = {
-    # A01 — Broken Access Control
-    "lfi"                : ("A01", "Broken Access Control - Local File Inclusion"),
-    "local file"         : ("A01", "Broken Access Control - Local File Inclusion"),
-    "rfi"                : ("A01", "Broken Access Control - Remote File Inclusion"),
-    "remote file"        : ("A01", "Broken Access Control - Remote File Inclusion"),
-    "path traversal"     : ("A01", "Broken Access Control - Path Traversal"),
-    "directory traversal": ("A01", "Broken Access Control - Path Traversal"),
-    "csrf"               : ("A01", "Broken Access Control - CSRF"),
-    "privilege"          : ("A01", "Broken Access Control - Privilege Escalation"),
-    # A02 — Cryptographic Failures
-    "ssl"                : ("A02", "Cryptographic Failures"),
-    "tls"                : ("A02", "Cryptographic Failures"),
-    "weak cipher"        : ("A02", "Cryptographic Failures"),
-    "weak encryption"    : ("A02", "Cryptographic Failures"),
-    "certificate"        : ("A02", "Cryptographic Failures"),
-    "openssl"            : ("A02", "Cryptographic Failures"),
-    # A03 — Injection
-    "rce"                : ("A03", "Injection / Remote Code Execution"),
-    "remote code"        : ("A03", "Injection / Remote Code Execution"),
-    "sql injection"      : ("A03", "Injection - SQL Injection"),
-    "sqli"               : ("A03", "Injection - SQL Injection"),
-    "xss"                : ("A03", "Injection - Cross-Site Scripting"),
-    "cross-site"         : ("A03", "Injection - Cross-Site Scripting"),
-    # A04 — Insecure Design
-    "file upload"        : ("A04", "Insecure Design - Unrestricted File Upload"),
-    # A05 — Security Misconfiguration
-    "information"        : ("A05", "Security Misconfiguration - Info Disclosure"),
-    "disclosure"         : ("A05", "Security Misconfiguration - Info Disclosure"),
-    # A06 — Vulnerable and Outdated Components
-    "buffer overflow"    : ("A06", "Vulnerable and Outdated Components"),
-    "overflow"           : ("A06", "Vulnerable and Outdated Components"),
-    # A07 — Identification and Authentication Failures
-    "authentication"     : ("A07", "Identification and Authentication Failures"),
-    "bypass"             : ("A07", "Identification and Authentication Failures"),
-    # A08 — Software and Data Integrity Failures
-    "deserialization"    : ("A08", "Software and Data Integrity Failures"),
-    # A09 — Security Logging and Monitoring Failures
-    "log injection"      : ("A09", "Security Logging and Monitoring Failures"),
-    "log forging"        : ("A09", "Security Logging and Monitoring Failures"),
-    "audit"              : ("A09", "Security Logging and Monitoring Failures"),
-    # A10 — Server-Side Request Forgery
-    "ssrf"               : ("A10", "Server-Side Request Forgery"),
+    # A01:2025 — Broken Access Control
+    "lfi"                : ("A01:2025", "Broken Access Control - Local File Inclusion"),
+    "local file"         : ("A01:2025", "Broken Access Control - Local File Inclusion"),
+    "rfi"                : ("A01:2025", "Broken Access Control - Remote File Inclusion"),
+    "remote file"        : ("A01:2025", "Broken Access Control - Remote File Inclusion"),
+    "path traversal"     : ("A01:2025", "Broken Access Control - Path Traversal"),
+    "directory traversal": ("A01:2025", "Broken Access Control - Path Traversal"),
+    "csrf"               : ("A01:2025", "Broken Access Control - CSRF"),
+    "privilege"          : ("A01:2025", "Broken Access Control - Privilege Escalation"),
+    "ssrf"               : ("A01:2025", "Broken Access Control - SSRF"),
+    # A02:2025 — Security Misconfiguration (era A05:2021)
+    "information"        : ("A02:2025", "Security Misconfiguration - Info Disclosure"),
+    "disclosure"         : ("A02:2025", "Security Misconfiguration - Info Disclosure"),
+    # A03:2025 — Software Supply Chain Failures (nueva; absorbe A06:2021)
+    "buffer overflow"    : ("A03:2025", "Software Supply Chain Failures"),
+    "overflow"           : ("A03:2025", "Software Supply Chain Failures"),
+    # A04:2025 — Cryptographic Failures (era A02:2021)
+    "ssl"                : ("A04:2025", "Cryptographic Failures"),
+    "tls"                : ("A04:2025", "Cryptographic Failures"),
+    "weak cipher"        : ("A04:2025", "Cryptographic Failures"),
+    "weak encryption"    : ("A04:2025", "Cryptographic Failures"),
+    "certificate"        : ("A04:2025", "Cryptographic Failures"),
+    "openssl"            : ("A04:2025", "Cryptographic Failures"),
+    # A05:2025 — Injection (era A03:2021)
+    "rce"                : ("A05:2025", "Injection / Remote Code Execution"),
+    "remote code"        : ("A05:2025", "Injection / Remote Code Execution"),
+    "sql injection"      : ("A05:2025", "Injection - SQL Injection"),
+    "sqli"               : ("A05:2025", "Injection - SQL Injection"),
+    "xss"                : ("A05:2025", "Injection - Cross-Site Scripting"),
+    "cross-site"         : ("A05:2025", "Injection - Cross-Site Scripting"),
+    # A06:2025 — Insecure Design (era A04:2021)
+    "file upload"        : ("A06:2025", "Insecure Design - Unrestricted File Upload"),
+    # A07:2025 — Authentication Failures (era A07:2021, renombrada)
+    "authentication"     : ("A07:2025", "Authentication Failures"),
+    "bypass"             : ("A07:2025", "Authentication Failures"),
+    # A08:2025 — Software and Data Integrity Failures (era A08:2021)
+    "deserialization"    : ("A08:2025", "Software and Data Integrity Failures"),
+    # A09:2025 — Logging & Alerting Failures (era A09:2021, renombrada)
+    "log injection"      : ("A09:2025", "Logging & Alerting Failures"),
+    "log forging"        : ("A09:2025", "Logging & Alerting Failures"),
+    "audit"              : ("A09:2025", "Logging & Alerting Failures"),
+    # A10:2025 — Mishandling of Exceptional Conditions (nueva)
+    "exception"          : ("A10:2025", "Mishandling of Exceptional Conditions"),
+    "error handling"     : ("A10:2025", "Mishandling of Exceptional Conditions"),
 }
 
 PALABRAS_CLAVE_SEVERIDAD = {
